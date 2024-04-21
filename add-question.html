@@ -58,13 +58,20 @@
 
     <div id="list" class="cards"></div>
 
+    <script src = "configuration.js"></script>
     <script>
-      let host = "http://localhost:8080";
+      let host = getHost();
       let questions = [];
       displayTheQuestions();
 
       async function getAll() {
-        let response = await fetch(host + "/questions");
+        let request = {
+          method : "GET",
+          headers : {
+            "Authorization": `Bearer ${configuration.token()}`
+          }
+        }
+        let response = await fetch(host + "/questions", request);
         let result = await response.json();
         return result;
       }
@@ -82,7 +89,7 @@
           div.className = "card";
           let innerHtml = `
          
-        <img src="http://localhost:8080/questions/${question.id}/image" alt="question" style="width:100%">
+        <img src="${await getTheImage(question.id)}" alt="question" style="width:100%">
         <div class="container">
           <h4><b>${question.id}</b></h4> 
           <p>${question.description}</p>
@@ -133,6 +140,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${configuration.token()}`
           },
           body: JSON.stringify(question),
         };
@@ -159,7 +167,10 @@
         formData.append("file", imageFile);
         let request = {
           method: "POST",
-          body: formData,
+          headers : {
+            "Authorization": `Bearer ${configuration.token()}`
+          },
+          body: formData
         };
         let response = await fetch(
           host + "/questions/" + id + "/image",
@@ -167,6 +178,22 @@
         );
         let result = await response.json();
         return result;
+      }
+
+      async function getTheImage(questionId) {
+        const request = {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${configuration.token()}`
+          }
+        };
+        let response = await fetch(`${host}/questions/${questionId}/image`, request);
+        if (response.status == 401) {
+          logout();
+          return "";
+        }
+        let imageData = await response.blob();
+        return URL.createObjectURL(imageData);
       }
     </script>
   </body>

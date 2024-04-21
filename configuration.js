@@ -1,7 +1,7 @@
-const mode = 0;
+const mode = 1;
 
 const host_local = "http://localhost:8080";
-const host_remote = "https://ducks-service-???.onrender.com";
+const host_remote = "https://test3-latest-3nam.onrender.com";
 
 function getHost() {
     return (mode == 0) ? host_local : host_remote;
@@ -42,7 +42,7 @@ async function updateTheNavigationBar() {
     let loginTag = navigation.children[navigation.children.length - 1];
     if(configuration.isLoggedIn()) {
         loginTag.innerHTML = 
-        `<li class="right"><a  href="#" onclick="logout()">Logout</a></li>`;
+        `<li class="right"><a  href="login.html" onclick="logout()">Logout</a></li>`;
     } else {
         loginTag.innerHTML = `<li class="right"><a  href="login.html">Login</a></li>`;
     }
@@ -52,8 +52,8 @@ async function updateTheNavigationBar() {
 
 async function signup() {
     let email = document.getElementById("email").value;
-    let username = document.getElementById("username").value;
-    let password = document.getElementById("password").value;
+    let username = document.getElementById("signup-username").value;
+    let password = document.getElementById("signup-password-repeat").value;
     let customer = {email:email, username: username, password: password}
     let request = {
         method: "POST",

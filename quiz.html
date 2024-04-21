@@ -12,12 +12,13 @@
 
   <body>
     <ul id="navigation" class="topnav" >
-        <li><a href="index.html">Home</a></li>
-        <li><a href="add-question.html">Add questions</a></li>
-        <li><a  href="make-a-quiz.html">Create a quiz</a></li>
-        <li><a class="active" href="take-a-quiz.html">Take a quiz</a></li>
-        <li class="right"><a href="login.html">Login</a></li>
-      </ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="add-question.html">Add questions</a></li>
+      <li><a  href="make-a-quiz.html">Create a quiz</a></li>
+      <li><a class="active" href="take-a-quiz.html">Take a quiz</a></li>
+      <li class="right"><a href="login.html">Login</a></li>
+    </ul>
+
     <div id="screen" class="screen">
       <div id="item" ></div>
       <div id="controls" class="controls">
@@ -27,8 +28,9 @@
       </div>
     </div>
 
+    <script src = "configuration.js"></script>
     <script>
-      let host = "http://localhost:8080";
+      let host = getHost();
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get("id");
       let quiz = null;
@@ -42,7 +44,13 @@
       startTheQuiz();
 
       async function startTheQuiz() {
-        let response = await fetch(host + "/quizzes/" + id);
+        let request = {
+          method : "GET",
+          headers : {
+            "Authorization": `Bearer ${configuration.token()}`
+          }
+        };
+        let response = await fetch(host + "/quizzes/" + id, request);
         quiz = await response.json();
         await displayTheQuestion(0);
       }
@@ -114,7 +122,7 @@
         let div = document.createElement("div");
         div.className = "card";        
         let innerHtml = `
-         <img src="http://localhost:8080/questions/${question.id}/image" alt="question" style="width:100%">
+         <img src="${await getTheImage(question.id)}" alt="question" style="width:100%">
          <div class="container">
            <h4><b>${question.id}</b></h4>
            <p>${question.description}</p>
@@ -132,6 +140,22 @@
              `;
         div.innerHTML = innerHtml;
         item.appendChild(div);
+      }
+
+      async function getTheImage(questionId) {
+        const request = {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${configuration.token()}`
+          }
+        };
+        let response = await fetch(`${host}/questions/${questionId}/image`, request);
+        if (response.status == 401) {
+          logout();
+          return "";
+        }
+        let imageData = await response.blob();
+        return URL.createObjectURL(imageData);
       }
     </script>
   </body>

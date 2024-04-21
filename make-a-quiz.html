@@ -32,14 +32,15 @@
         Save this quiz and start a new one
       </button>
       <h3>
-        If you want to remvoe a question from the quiz, you can click on the
-        question here ant it will be removed from the quiz.
+        If you want to remove a question from the quiz, you can click on the
+        question here and it will be removed from the quiz.
       </h3>
       <div id="quiz"></div>
     </div>
 
+    <script src = "configuration.js"></script>
     <script>
-      let host = "http://localhost:8080";
+      let host = getHost();
       let questions = [];
       let list = document.getElementById("list");
       let quiz = document.getElementById("quiz");
@@ -51,7 +52,13 @@
       displayTheQuestions();
 
       async function getAll() {
-        let response = await fetch(host + "/questions");
+        let request = {
+          method : "GET",
+          headers : {
+            "Authorization": `Bearer ${configuration.token()}`
+          }
+        }
+        let response = await fetch(host + "/questions", request);
         let result = await response.json();
         return result;
       }
@@ -80,7 +87,7 @@
           div.className = "card";
           let innerHtml = `
        
-      <img src="http://localhost:8080/questions/${question.id}/image" alt="question" style="width:100%">
+      <img src="${await getTheImage(question.id)}" alt="question" style="width:100%">
       <div class="container">
         <h4><b>${question.id}</b></h4> 
         <p>${question.description}</p>
@@ -112,6 +119,7 @@
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${configuration.token()}`
             },
             body: JSON.stringify({"title": quizTitle, "questionIds": quizQuestions}),
           };
@@ -121,6 +129,7 @@
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${configuration.token()}`
             },
             body: JSON.stringify({"id": quizId, "title": quizTitle, "questionIds": quizQuestions}),
           };
@@ -139,6 +148,22 @@
       async function saveTheQuizAndNew() {
         await saveTheQuiz();
         location.href = "make-a-quiz.html";
+      }
+
+      async function getTheImage(questionId) {
+        const request = {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${configuration.token()}`
+          }
+        };
+        let response = await fetch(`${host}/questions/${questionId}/image`, request);
+        if (response.status == 401) {
+          logout();
+          return "";
+        }
+        let imageData = await response.blob();
+        return URL.createObjectURL(imageData);
       }
     </script>
   </body>
